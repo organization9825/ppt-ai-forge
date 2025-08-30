@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +11,7 @@ const PPTGenerator = () => {
   const [topic, setTopic] = useState('');
   const [slides, setSlides] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
-  const navigate = useNavigate();
+  
 
   const downloadFile = (data: Blob, filename: string) => {
     const url = window.URL.createObjectURL(data);
@@ -54,20 +53,10 @@ const PPTGenerator = () => {
         }
       }
 
-      // Create blob URL for download page
-      const url = window.URL.createObjectURL(response.data);
+      // Automatically download file
+      downloadFile(response.data, filename);
       
-      toast.success('✅ PPT generated successfully!');
-      
-      // Navigate to download page with file data
-      navigate('/download', { 
-        state: { 
-          fileUrl: url, 
-          filename: filename,
-          topic: topic.trim(),
-          slides: slides
-        } 
-      });
+      toast.success('✅ PPT generated successfully! Download started automatically.');
       
       // Reset form
       setTopic('');
@@ -138,15 +127,14 @@ const PPTGenerator = () => {
               <Input
                 id="slides"
                 type="number"
-                min="3"
-                max="20"
+                min="1"
                 value={slides}
-                onChange={(e) => setSlides(Math.max(3, Math.min(20, parseInt(e.target.value) || 5)))}
+                onChange={(e) => setSlides(parseInt(e.target.value) || 5)}
                 className="h-11 border-border/50 focus:border-ai-primary/50 focus:ring-ai-primary/20"
                 disabled={isGenerating}
               />
               <p className="text-xs text-muted-foreground">
-                Choose between 3-20 slides
+                Enter desired number of slides
               </p>
             </div>
           </div>
