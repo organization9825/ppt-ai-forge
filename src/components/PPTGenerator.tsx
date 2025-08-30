@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,7 @@ const PPTGenerator = () => {
   const [topic, setTopic] = useState('');
   const [slides, setSlides] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
+  const navigate = useNavigate();
 
   const downloadFile = (data: Blob, filename: string) => {
     const url = window.URL.createObjectURL(data);
@@ -52,9 +54,20 @@ const PPTGenerator = () => {
         }
       }
 
-      downloadFile(response.data, filename);
+      // Create blob URL for download page
+      const url = window.URL.createObjectURL(response.data);
       
-      toast.success('✅ PPT generated successfully. Your download should begin automatically.');
+      toast.success('✅ PPT generated successfully!');
+      
+      // Navigate to download page with file data
+      navigate('/download', { 
+        state: { 
+          fileUrl: url, 
+          filename: filename,
+          topic: topic.trim(),
+          slides: slides
+        } 
+      });
       
       // Reset form
       setTopic('');
@@ -83,7 +96,7 @@ const PPTGenerator = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gradient-to-br from-ai-primary/5 via-transparent to-ai-secondary/5"></div>
       
-      <Card className="w-full max-w-md relative z-10 shadow-lg border-0 bg-card/95 backdrop-blur-sm">
+      <Card className="w-full max-w-2xl relative z-10 shadow-lg border-0 bg-card/95 backdrop-blur-sm">
         <CardHeader className="text-center pb-6">
           <div className="mx-auto mb-4 p-3 rounded-full bg-gradient-to-br from-ai-primary to-ai-secondary w-fit">
             <FileText className="h-8 w-8 text-white" />
@@ -97,43 +110,45 @@ const PPTGenerator = () => {
         </CardHeader>
         
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="topic" className="text-sm font-medium">
-              Presentation Topic *
-            </Label>
-            <Input
-              id="topic"
-              type="text"
-              placeholder="e.g., Machine Learning Basics"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              className="h-11 border-border/50 focus:border-ai-primary/50 focus:ring-ai-primary/20"
-              disabled={isGenerating}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !isGenerating) {
-                  handleGeneratePPT();
-                }
-              }}
-            />
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="topic" className="text-sm font-medium">
+                Presentation Topic *
+              </Label>
+              <Input
+                id="topic"
+                type="text"
+                placeholder="e.g., Machine Learning Basics"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                className="h-11 border-border/50 focus:border-ai-primary/50 focus:ring-ai-primary/20"
+                disabled={isGenerating}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !isGenerating) {
+                    handleGeneratePPT();
+                  }
+                }}
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="slides" className="text-sm font-medium">
-              Number of Slides
-            </Label>
-            <Input
-              id="slides"
-              type="number"
-              min="3"
-              max="20"
-              value={slides}
-              onChange={(e) => setSlides(Math.max(3, Math.min(20, parseInt(e.target.value) || 5)))}
-              className="h-11 border-border/50 focus:border-ai-primary/50 focus:ring-ai-primary/20"
-              disabled={isGenerating}
-            />
-            <p className="text-xs text-muted-foreground">
-              Choose between 3-20 slides
-            </p>
+            <div className="space-y-2">
+              <Label htmlFor="slides" className="text-sm font-medium">
+                Number of Slides
+              </Label>
+              <Input
+                id="slides"
+                type="number"
+                min="3"
+                max="20"
+                value={slides}
+                onChange={(e) => setSlides(Math.max(3, Math.min(20, parseInt(e.target.value) || 5)))}
+                className="h-11 border-border/50 focus:border-ai-primary/50 focus:ring-ai-primary/20"
+                disabled={isGenerating}
+              />
+              <p className="text-xs text-muted-foreground">
+                Choose between 3-20 slides
+              </p>
+            </div>
           </div>
 
           <Button
